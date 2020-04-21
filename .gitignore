@@ -1,0 +1,6 @@
+.DS_Store
+src.zip
+gallery/
+.ipynb_checkpoints/
+__pycache__/
+data/

@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <input type="range" min="1981" max="2015" value="1999" step="1" id="slider">
+    <h1 id="year">Year: 1999</h1>
+    <img src="{{ rainfall }}" id="rainfall">
+    <script src="{{ url_for('static', filename='jquery-3.5.0.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='slider.js') }}"></script>
+  </body>
+</html>
