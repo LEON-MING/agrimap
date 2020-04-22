@@ -3,4 +3,5 @@ src.zip
 gallery/
 .ipynb_checkpoints/
 __pycache__/
-data/
+og_data/
+env/

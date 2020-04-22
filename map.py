@@ -5,6 +5,7 @@ import matplotlib.figure as figure
 import matplotlib.patches as mpatches
 import base64
 from io import BytesIO
+from functools import lru_cache
 
 def read_shapefile(sf):
     """
@@ -84,6 +85,7 @@ def plot_data(sf, title, county_ids, data=None, color=None, print_id=False, figs
 sf = shp.Reader("./data/cntymap/cntymap.shp", encoding='latin1')
 counties_df = read_shapefile(sf)
 rainfall_df = pd.read_csv("./data/pptAprOct.csv")
+temp_df = pd.read_csv("./data/gddAprOctAvg.csv")
 # Change stco type to int
 counties_df.stco = counties_df.stco.astype(int)
 counties_df = counties_df.drop(['SP_ID', 'SP_ID_1', 'atlas_caps', 'atlas_area', 'entity', 'cntya', 'cntyn', 'fid', 'eastm100',
@@ -106,3 +108,17 @@ def get_rainfall_map(year):
         data = base64.b64encode(buf.getbuffer()).decode("ascii")
         rainfall_maps[year] = f"data:image/png;base64,{data}"
     return rainfall_maps[year]
+
+temp_maps = {}
+def get_temp_map(year):
+    if year not in temp_maps:
+        california_temp = temp_df.loc[temp_df['stco'].isin(california_counties.stco) & (temp_df['year'] == year)]
+        california_temp = california_counties.merge(california_temp, how='left', on='stco')
+        california_temp = california_temp.fillna(california_temp.mean()).avg_temp
+
+        fig = plot_data(sf, 'California Temp ' + str(year), california_county_ids, data=california_temp, color=1, print_id=False, figsize=(8,11))
+        buf = BytesIO()
+        fig.savefig(buf, format="png")
+        data = base64.b64encode(buf.getbuffer()).decode("ascii")
+        temp_maps[year] = f"data:image/png;base64,{data}"
+    return temp_maps[year]

@@ -1,9 +1,19 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  </head>
   <body>
     <input type="range" min="1981" max="2015" value="1999" step="1" id="slider">
     <h1 id="year">Year: 1999</h1>
-    <img src="{{ rainfall }}" id="rainfall">
+    <div class="row">
+        <div class="column">
+            <img src="{{ rainfall }}" id="rainfall">
+        </div>
+        <div class="column">
+            <img src="{{ temp }}" id="temp">
+        </div>
+    </div>
     <script src="{{ url_for('static', filename='jquery-3.5.0.min.js') }}"></script>
     <script src="{{ url_for('static', filename='slider.js') }}"></script>
   </body>
