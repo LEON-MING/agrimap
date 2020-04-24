@@ -8,6 +8,7 @@ $(window).on('load', function() {
                 console.log("got json");
                 $("#rainfall").attr("src", data.rainfall);
                 $("#temp").attr("src", data.temp);
+                $("#crop").attr("src", data.crop);
                 $("#year").html("Year: " + data.year);
             }
         );

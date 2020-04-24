@@ -5,7 +5,7 @@ import matplotlib.figure as figure
 import matplotlib.patches as mpatches
 import base64
 from io import BytesIO
-from functools import lru_cache
+import pickle
 
 def read_shapefile(sf):
     """
@@ -77,7 +77,6 @@ def plot_data(sf, title, county_ids, data=None, color=None, print_id=False, figs
     '''
 
     color_sq, color_codes, bins = calc_color(data, color)
-    df = read_shapefile(sf)
     return plot_map_fill_multiples_ids_tone(sf, title, county_ids, print_id,
         color_codes, color_sq, bins, figsize)
 
@@ -86,6 +85,7 @@ sf = shp.Reader("./data/cntymap/cntymap.shp", encoding='latin1')
 counties_df = read_shapefile(sf)
 rainfall_df = pd.read_csv("./data/pptAprOct.csv")
 temp_df = pd.read_csv("./data/gddAprOctAvg.csv")
+crop_df = pd.read_csv("./data/crop_data.csv")
 # Change stco type to int
 counties_df.stco = counties_df.stco.astype(int)
 counties_df = counties_df.drop(['SP_ID', 'SP_ID_1', 'atlas_caps', 'atlas_area', 'entity', 'cntya', 'cntyn', 'fid', 'eastm100',
@@ -95,7 +95,8 @@ counties_df = counties_df.drop(['SP_ID', 'SP_ID_1', 'atlas_caps', 'atlas_area', 
 california_counties = counties_df[(counties_df['stco'].astype(int) < 7000) & (counties_df['stco'].astype(int) >= 6000)]
 california_county_ids = list(california_counties.index)
 
-rainfall_maps = {}
+with open('./data/rainfall_maps_dump', 'rb') as pickle_file:
+    rainfall_maps = pickle.load(pickle_file)
 def get_rainfall_map(year):
     if year not in rainfall_maps:
         california_rainfall = rainfall_df.loc[rainfall_df['stco'].isin(california_counties.stco) & (rainfall_df['year'] == year)]
@@ -109,7 +110,8 @@ def get_rainfall_map(year):
         rainfall_maps[year] = f"data:image/png;base64,{data}"
     return rainfall_maps[year]
 
-temp_maps = {}
+with open('./data/temp_maps_dump', 'rb') as pickle_file:
+    temp_maps = pickle.load(pickle_file)
 def get_temp_map(year):
     if year not in temp_maps:
         california_temp = temp_df.loc[temp_df['stco'].isin(california_counties.stco) & (temp_df['year'] == year)]
@@ -122,3 +124,47 @@ def get_temp_map(year):
         data = base64.b64encode(buf.getbuffer()).decode("ascii")
         temp_maps[year] = f"data:image/png;base64,{data}"
     return temp_maps[year]
+
+with open('./data/crop_maps_dump', 'rb') as pickle_file:
+    crop_maps = pickle.load(pickle_file)
+def get_crop_map(year):
+    if year not in crop_maps:
+        fig = figure.Figure(figsize=(8,11))
+        ax = fig.subplots()
+        fig.suptitle('California Crop ' + str(year), fontsize=16, y=0.87)
+        ax.xaxis.set_visible(False)
+        ax.yaxis.set_visible(False)
+
+        california_rainfall = rainfall_df.loc[rainfall_df['stco'].isin(california_counties.stco) & (rainfall_df['year'] == year)]
+        california_temp = temp_df.loc[temp_df['stco'].isin(california_counties.stco) & (temp_df['year'] == year)]
+        california_crop = california_counties.merge(california_rainfall, how='left', on='stco')
+        california_crop = california_crop.merge(california_temp, how='left', on=['stco', 'year'])
+        california_crop = california_crop.fillna(california_crop.mean())
+        california_crop = california_crop.assign(key=0).merge(crop_df.assign(key=0), how='left', on='key')
+        crop_filter = (california_crop['Min Temp'] <= california_crop['avg_temp']) & \
+                      (california_crop['avg_temp'] <= california_crop['Max Temp'])
+        california_crop = california_crop[crop_filter]
+        california_crop['water_diff'] = abs(california_crop['ppt'] - california_crop['Min Water'])
+        california_crop = california_crop.sort_values(by='water_diff')
+        california_crop = california_crop.groupby('stco').head(3).sort_values(by='stco')
+        california_crop = california_crop[['atlas_name', 'stco', 'year', 'ppt', 'avg_temp', 'Crop']]
+        california_crop = california_crop.groupby(['atlas_name', 'stco', 'year', 'ppt', 'avg_temp'])['Crop'].apply(','.join).reset_index()
+
+
+        for index, id in enumerate(california_county_ids):
+            shape_ex = sf.shape(id)
+            x_lon = np.empty(len(shape_ex.points))
+            y_lat = np.empty(len(shape_ex.points))
+            for ip in range(len(shape_ex.points)):
+                x_lon[ip] = shape_ex.points[ip][0]
+                y_lat[ip] = shape_ex.points[ip][1]
+            ax.fill(x_lon, y_lat, '#C5C5C5')
+            x0 = np.mean(x_lon)
+            y0 = np.mean(y_lat)
+            ax.text(x0, y0, california_crop.iloc[index]['Crop'], fontsize=10)
+        buf = BytesIO()
+        fig.savefig(buf, format="png")
+        data = base64.b64encode(buf.getbuffer()).decode("ascii")
+        crop_maps[year] = f"data:image/png;base64,{data}"
+    return crop_maps[year]
+
