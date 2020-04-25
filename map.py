@@ -6,6 +6,7 @@ import matplotlib.patches as mpatches
 import base64
 from io import BytesIO
 import pickle
+from os import path
 
 def read_shapefile(sf):
     """
@@ -46,7 +47,7 @@ def plot_map_fill_multiples_ids_tone(sf, title, counties,
                                      figsize):
     fig = figure.Figure(figsize = figsize)
     ax = fig.subplots()
-    fig.suptitle(title, fontsize=16, y=0.85)
+    fig.suptitle(title, fontsize=14, y=0.85)
     ax.xaxis.set_visible(False)
     ax.yaxis.set_visible(False)
     patches = []
@@ -80,58 +81,55 @@ def plot_data(sf, title, county_ids, data=None, color=None, print_id=False, figs
     return plot_map_fill_multiples_ids_tone(sf, title, county_ids, print_id,
         color_codes, color_sq, bins, figsize)
 
-# Load files and dataframes
-sf = shp.Reader("./data/cntymap/cntymap.shp", encoding='latin1')
-counties_df = read_shapefile(sf)
-rainfall_df = pd.read_csv("./data/pptAprOct.csv")
-temp_df = pd.read_csv("./data/gddAprOctAvg.csv")
-crop_df = pd.read_csv("./data/crop_data.csv")
-# Change stco type to int
-counties_df.stco = counties_df.stco.astype(int)
-counties_df = counties_df.drop(['SP_ID', 'SP_ID_1', 'atlas_caps', 'atlas_area', 'entity', 'cntya', 'cntyn', 'fid', 'eastm100',
-                 'coords', 'atlas_acre', 'atlas_stco'], axis=1)
-
-# Get california county ids
-california_counties = counties_df[(counties_df['stco'].astype(int) < 7000) & (counties_df['stco'].astype(int) >= 6000)]
-california_county_ids = list(california_counties.index)
-
-with open('./data/rainfall_maps_dump', 'rb') as pickle_file:
-    rainfall_maps = pickle.load(pickle_file)
+# Rainfall Maps
+if path.exists('./data/rainfall_maps_dump'):
+    with open('./data/rainfall_maps_dump', 'rb') as pickle_file:
+        rainfall_maps = pickle.load(pickle_file)
+else:
+    rainfall_maps = {}
 def get_rainfall_map(year):
     if year not in rainfall_maps:
         california_rainfall = rainfall_df.loc[rainfall_df['stco'].isin(california_counties.stco) & (rainfall_df['year'] == year)]
         california_rainfall = california_counties.merge(california_rainfall, how='left', on='stco')
         california_rainfall = california_rainfall.fillna(california_rainfall.mean()).ppt
 
-        fig = plot_data(sf, 'California Rainfall ' + str(year), california_county_ids, data=california_rainfall, color=1, print_id=False, figsize=(8,11))
+        fig = plot_data(sf, 'Seasonal Rainfall (mm)', california_county_ids, data=california_rainfall, color=1, print_id=False, figsize=(8,11))
         buf = BytesIO()
         fig.savefig(buf, format="png")
         data = base64.b64encode(buf.getbuffer()).decode("ascii")
         rainfall_maps[year] = f"data:image/png;base64,{data}"
     return rainfall_maps[year]
 
-with open('./data/temp_maps_dump', 'rb') as pickle_file:
-    temp_maps = pickle.load(pickle_file)
+# Temperature Maps
+if path.exists('./data/temp_maps_dump'):
+    with open('./data/temp_maps_dump', 'rb') as pickle_file:
+        temp_maps = pickle.load(pickle_file)
+else:
+    temp_maps = {}
 def get_temp_map(year):
     if year not in temp_maps:
         california_temp = temp_df.loc[temp_df['stco'].isin(california_counties.stco) & (temp_df['year'] == year)]
         california_temp = california_counties.merge(california_temp, how='left', on='stco')
         california_temp = california_temp.fillna(california_temp.mean()).avg_temp
 
-        fig = plot_data(sf, 'California Temp ' + str(year), california_county_ids, data=california_temp, color=1, print_id=False, figsize=(8,11))
+        fig = plot_data(sf, 'Avg Daily Temp (C)', california_county_ids, data=california_temp, color=1, print_id=False, figsize=(8,11))
         buf = BytesIO()
         fig.savefig(buf, format="png")
         data = base64.b64encode(buf.getbuffer()).decode("ascii")
         temp_maps[year] = f"data:image/png;base64,{data}"
     return temp_maps[year]
 
-with open('./data/crop_maps_dump', 'rb') as pickle_file:
-    crop_maps = pickle.load(pickle_file)
+# Crop Maps
+if path.exists('./data/crop_maps_dump'):
+    with open('./data/crop_maps_dump', 'rb') as pickle_file:
+        crop_maps = pickle.load(pickle_file)
+else:
+    crop_maps = {}
 def get_crop_map(year):
     if year not in crop_maps:
         fig = figure.Figure(figsize=(8,11))
         ax = fig.subplots()
-        fig.suptitle('California Crop ' + str(year), fontsize=16, y=0.87)
+        fig.suptitle('Top Crops', fontsize=14, y=0.87)
         ax.xaxis.set_visible(False)
         ax.yaxis.set_visible(False)
 
@@ -168,3 +166,30 @@ def get_crop_map(year):
         crop_maps[year] = f"data:image/png;base64,{data}"
     return crop_maps[year]
 
+
+# Load files and dataframes
+sf = shp.Reader("./data/cntymap/cntymap.shp", encoding='latin1')
+counties_df = read_shapefile(sf)
+rainfall_df = pd.read_csv("./data/pptAprOct.csv")
+temp_df = pd.read_csv("./data/gddAprOctAvg.csv")
+crop_df = pd.read_csv("./data/crop_data.csv")
+# Change stco type to int
+counties_df.stco = counties_df.stco.astype(int)
+counties_df = counties_df.drop(['SP_ID', 'SP_ID_1', 'atlas_caps', 'atlas_area', 'entity', 'cntya', 'cntyn', 'fid', 'eastm100',
+                 'coords', 'atlas_acre', 'atlas_stco'], axis=1)
+
+# Get california county ids
+california_counties = counties_df[(counties_df['stco'].astype(int) < 7000) & (counties_df['stco'].astype(int) >= 6000)]
+california_county_ids = list(california_counties.index)
+
+# Preload data
+for year in range(1981, 2015+1):
+    get_rainfall_map(year)
+    get_temp_map(year)
+    get_crop_map(year)
+with open('./data/rainfall_maps_dump', 'wb') as pickle_file:
+    pickle.dump(rainfall_maps, pickle_file)
+with open('./data/temp_maps_dump', 'wb') as pickle_file:
+    pickle.dump(temp_maps, pickle_file)
+with open('./data/crop_maps_dump', 'wb') as pickle_file:
+    pickle.dump(crop_maps, pickle_file)

@@ -5,10 +5,6 @@ application = Flask(__name__)
 
 @application.route('/')
 def home():
-    for year in range(1981, 2015+1):
-        get_rainfall_map(year)
-        get_temp_map(year)
-        get_crop_map(year)
     return render_template("home.html",
                             rainfall=get_rainfall_map(1999),
                             temp=get_temp_map(1999),
