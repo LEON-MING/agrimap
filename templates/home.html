@@ -4,20 +4,108 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
   </head>
   <body>
-    <input type="range" min="1981" max="2015" value="1999" step="1" id="slider">
-    <h1 id="year">Year: 1999</h1>
-    <div class="row">
-        <div class="column">
-            <img src="{{ rainfall }}" id="rainfall">
+      <header class="header-container" id="agrimap-banner" style="background-image: url({{ url_for('static', filename='agrimap-background3.jpeg') }});">
+        <h1 id="title"> AgriMap </h1>
+        <img src="{{ url_for('static', filename='icon.png')}}">
+      </header>
+      <div class="top-level">
+
+        <div class="video-section">
+          <video controls class="container-item video">
+            <source src="{{ url_for('static', filename='agrimap-video.mp4') }}" type="video/mp4">
+            Your browser does not support HTML5 video.
+          </video>
+
+          <div class="video-text container-item ">
+            <h1> Our Mission </h1>
+            <h3> 
+              Our mission is to help alleviate job insecurity for the 2.6 million farmers in the US
+              by assisting them in making more
+              <strong> sustainable, well-informed decisions </strong> 
+              regarding maintaining their farms by analyzing historical data 
+              and determining how agricultural trends change with rainfall 
+              and temperature changes the ideal crops to grow given 
+              changing climate conditions
+              
+            </h3>
+          </div>
+
         </div>
-        <div class="column">
-            <img src="{{ temp }}" id="temp">
+
+        <div style="text-align: center; padding-top: 20px;">
+          <h1 style="font-size: 44px; font-weight: 400; color: #0b5b7c"> Protect your farm from the effects of </h1>
+          <div class="container">
+            <div class="container  column container-item">
+              <div>
+                <div class="icon" style="background-image: url({{ url_for('static', filename='co2_icon.png') }});" ></div>
+              </div>        
+              <h2> Greenhouse gases</h2>
+              <p>GHG emissions  via the transportation sector</p>
+            </div>
+            <div class="container  column container-item">
+              <div>
+                <div class="icon" style="background-image: url({{ url_for('static', filename='deforestation_icon.png') }});" ></div>
+              </div>            
+              <h2> Deforestation </h2>
+              <p>Release of CO2 from deforestation and the clearing of land for industry</p>
+            </div>
+            <div class="container  column container-item">
+              <div>
+                <div class="icon" style="background-image: url({{ url_for('static', filename='methane_icon.jpeg') }});" ></div>
+              </div>        
+              <h2> Methane Emissions</h2>
+              <p>Methane and nitrous oxide release from food production</p>
+            </div>
+          </div>
         </div>
-        <div class="column">
-            <img src="{{ crop }}" id="crop">
+
+        <hr>
+
+        <div style="text-align: center; padding-top: 20px;">
+          <h1 style="font-size: 44px; font-weight: 400; color: #0b5b7c"> The effects of climate change on crops (slide 3 w/icons) </h1>
+          <div class="container">
+            <div class="container  column container-item">
+              <div>
+                <div class="icon" style="background-image: url({{ url_for('static', filename='co2_icon.png') }});" ></div>
+              </div>        
+              <h2> Greenhouse gases</h2>
+              <p>GHG emissions  via the transportation sector</p>
+            </div>
+            <div class="container  column container-item">
+              <div>
+                <div class="icon" style="background-image: url({{ url_for('static', filename='deforestation_icon.png') }});" ></div>
+              </div>            
+              <h2> Deforestation </h2>
+              <p>Release of CO2 from deforestation and the clearing of land for industry</p>
+            </div>
+            <div class="container  column container-item">
+              <div>
+                <div class="icon" style="background-image: url({{ url_for('static', filename='methane_icon.jpeg') }});" ></div>
+              </div>        
+              <h2> Methane Emissions</h2>
+              <p>Methane and nitrous oxide release from food production</p>
+            </div>
+          </div>
         </div>
-    </div>
-    <script src="{{ url_for('static', filename='jquery-3.5.0.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='slider.js') }}"></script>
+
+        <input type="range" min="1981" max="2015" value="1999" step="1" id="slider">
+
+        <h1 id="year">Year: 1999</h1>
+
+        <div class="row">
+            <div class="column">
+                <img class="graph" src="{{ rainfall }}" id="rainfall">
+            </div>
+            <div class="column">
+                <img class="graph" src="{{ temp }}" id="temp">
+            </div>
+            <div class="column">
+                <img class="graph" src="{{ crop }}" id="crop">
+            </div>
+        </div>
+
+        <script src="{{ url_for('static', filename='jquery-3.5.0.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='slider.js') }}"></script>
+      </div>
   </body>
 </html>
