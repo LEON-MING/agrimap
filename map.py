@@ -3,6 +3,7 @@ import pandas as pd
 import shapefile as shp
 import matplotlib.figure as figure
 import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 import base64
 from io import BytesIO
 import pickle
@@ -45,10 +46,11 @@ def plot_map_fill_multiples_ids_tone(sf, counties,
                                      print_id, color_codes,
                                      color_sq, bins,
                                      figsize):
-    fig = figure.Figure(figsize = figsize)
+    fig = figure.Figure(figsize = figsize, tight_layout=True)
     ax = fig.subplots()
     ax.xaxis.set_visible(False)
     ax.yaxis.set_visible(False)
+    ax.axis("off")
     patches = []
     for i in range(len(color_sq)):
         patches.append(mpatches.Patch(color=color_sq[i],
@@ -113,7 +115,7 @@ def get_temp_map(year):
 
         fig = plot_data(sf, california_county_ids, data=california_temp, color=1, print_id=False, figsize=(8,11))
         buf = BytesIO()
-        fig.savefig(buf, format="png", bbox_inches="tight")
+        fig.savefig(buf, format="png")
         data = base64.b64encode(buf.getbuffer()).decode("ascii")
         temp_maps[year] = f"data:image/png;base64,{data}"
     return temp_maps[year]
@@ -130,6 +132,7 @@ def get_crop_map(year):
         ax = fig.subplots()
         ax.xaxis.set_visible(False)
         ax.yaxis.set_visible(False)
+        ax.axis("off")
 
         california_rainfall = rainfall_df.loc[rainfall_df['stco'].isin(california_counties.stco) & (rainfall_df['year'] == year)]
         california_temp = temp_df.loc[temp_df['stco'].isin(california_counties.stco) & (temp_df['year'] == year)]
@@ -142,10 +145,11 @@ def get_crop_map(year):
         california_crop = california_crop[crop_filter]
         california_crop['water_diff'] = abs(california_crop['ppt'] - california_crop['Min Water'])
         california_crop = california_crop.sort_values(by='water_diff')
-        california_crop = california_crop.groupby('stco').head(3).sort_values(by='stco')
+        california_crop = california_crop.groupby('stco').head(2).sort_values(by='stco')
         california_crop = california_crop[['atlas_name', 'stco', 'year', 'ppt', 'avg_temp', 'Crop']]
         california_crop = california_crop.groupby(['atlas_name', 'stco', 'year', 'ppt', 'avg_temp'])['Crop'].apply(','.join).reset_index()
 
+        texts = []
 
         for index, id in enumerate(california_county_ids):
             shape_ex = sf.shape(id)
@@ -157,7 +161,7 @@ def get_crop_map(year):
             ax.fill(x_lon, y_lat, '#C5C5C5')
             x0 = np.mean(x_lon)
             y0 = np.mean(y_lat)
-            ax.text(x0, y0, california_crop.iloc[index]['Crop'], fontsize=10)
+            texts.append(ax.text(x0, y0, california_crop.iloc[index]['Crop'], fontsize=10, ha="center"))
         buf = BytesIO()
         fig.savefig(buf, format="png", bbox_inches="tight")
         data = base64.b64encode(buf.getbuffer()).decode("ascii")

@@ -1,7 +1,9 @@
 ﻿Crop,Min Temp,Max Temp,Min Water,Max Water
 Alfalfa,20,23,800,1600
 Banana,26,30,1200,2200
-Barley / Oats / Wheat,20,23,450,650
+Barley,20,23,450,650
+Oats,20,23,450,650
+Wheat,20,23,450,650
 Bean,15,18,300,500
 Cabbage,15,18,350,500
 Citrus,21,32,900,1200
@@ -13,8 +15,8 @@ Peanut,27.5,30,500,700
 Pea,15,18,350,500
 Pepper,21,24,600,900
 Potato,15,18,500,700
-Rice (paddy),25,35,450,700
-Sorghum / Millet,27,30,450,650
+Rice,25,35,450,700
+Millet,27,30,450,650
 Soybean,20,23,450,700
 Sugar beet,15.5,26.67,550,750
 Sugarcane,32,38,1500,2500

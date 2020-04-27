@@ -6,9 +6,9 @@ application = Flask(__name__)
 @application.route('/')
 def home():
     return render_template("home.html",
-                            rainfall=get_rainfall_map(1999),
-                            temp=get_temp_map(1999),
-                            crop=get_crop_map(1999))
+                            rainfall=get_rainfall_map(1998),
+                            temp=get_temp_map(1998),
+                            crop=get_crop_map(1998))
 
 @application.route('/data')
 def data():
