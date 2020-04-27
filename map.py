@@ -41,13 +41,12 @@ def calc_color(data, color=None):
 
     return color_sq, color_codes, bins
 
-def plot_map_fill_multiples_ids_tone(sf, title, counties,
+def plot_map_fill_multiples_ids_tone(sf, counties,
                                      print_id, color_codes,
                                      color_sq, bins,
                                      figsize):
     fig = figure.Figure(figsize = figsize)
     ax = fig.subplots()
-    fig.suptitle(title, fontsize=14, y=0.85)
     ax.xaxis.set_visible(False)
     ax.yaxis.set_visible(False)
     patches = []
@@ -72,13 +71,13 @@ def plot_map_fill_multiples_ids_tone(sf, title, counties,
 
     return fig
 
-def plot_data(sf, title, county_ids, data=None, color=None, print_id=False, figsize=(15, 9)):
+def plot_data(sf, county_ids, data=None, color=None, print_id=False, figsize=(8, 11)):
     '''
     Plot map with selected comunes, using specific color
     '''
 
     color_sq, color_codes, bins = calc_color(data, color)
-    return plot_map_fill_multiples_ids_tone(sf, title, county_ids, print_id,
+    return plot_map_fill_multiples_ids_tone(sf, county_ids, print_id,
         color_codes, color_sq, bins, figsize)
 
 # Rainfall Maps
@@ -93,9 +92,9 @@ def get_rainfall_map(year):
         california_rainfall = california_counties.merge(california_rainfall, how='left', on='stco')
         california_rainfall = california_rainfall.fillna(california_rainfall.mean()).ppt
 
-        fig = plot_data(sf, 'Seasonal Rainfall (mm)', california_county_ids, data=california_rainfall, color=1, print_id=False, figsize=(8,11))
+        fig = plot_data(sf, california_county_ids, data=california_rainfall, color=1, print_id=False, figsize=(8,11))
         buf = BytesIO()
-        fig.savefig(buf, format="png")
+        fig.savefig(buf, format="png", bbox_inches="tight")
         data = base64.b64encode(buf.getbuffer()).decode("ascii")
         rainfall_maps[year] = f"data:image/png;base64,{data}"
     return rainfall_maps[year]
@@ -112,9 +111,9 @@ def get_temp_map(year):
         california_temp = california_counties.merge(california_temp, how='left', on='stco')
         california_temp = california_temp.fillna(california_temp.mean()).avg_temp
 
-        fig = plot_data(sf, 'Avg Daily Temp (C)', california_county_ids, data=california_temp, color=1, print_id=False, figsize=(8,11))
+        fig = plot_data(sf, california_county_ids, data=california_temp, color=1, print_id=False, figsize=(8,11))
         buf = BytesIO()
-        fig.savefig(buf, format="png")
+        fig.savefig(buf, format="png", bbox_inches="tight")
         data = base64.b64encode(buf.getbuffer()).decode("ascii")
         temp_maps[year] = f"data:image/png;base64,{data}"
     return temp_maps[year]
@@ -129,7 +128,6 @@ def get_crop_map(year):
     if year not in crop_maps:
         fig = figure.Figure(figsize=(8,11))
         ax = fig.subplots()
-        fig.suptitle('Top Crops', fontsize=14, y=0.87)
         ax.xaxis.set_visible(False)
         ax.yaxis.set_visible(False)
 
@@ -161,7 +159,7 @@ def get_crop_map(year):
             y0 = np.mean(y_lat)
             ax.text(x0, y0, california_crop.iloc[index]['Crop'], fontsize=10)
         buf = BytesIO()
-        fig.savefig(buf, format="png")
+        fig.savefig(buf, format="png", bbox_inches="tight")
         data = base64.b64encode(buf.getbuffer()).decode("ascii")
         crop_maps[year] = f"data:image/png;base64,{data}"
     return crop_maps[year]
