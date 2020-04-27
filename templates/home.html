@@ -109,24 +109,56 @@
 
         <hr>
 
-        <div class="container column">
-          <h1 id="year">Year: 1999</h1>
-          <input type="range" min="1981" max="2015" value="1999" step="1" id="slider">
+        <div class="slider-container">
+          <!-- <h1 id="year">Year: 1998</h1> -->
+          <input type="range" min="1981" max="2015" value="1998" step="1" id="slider">
+          <div id="selector">
+            <div class="SelectBtn" style="background-image: url({{ url_for('static', filename='slider-icon.png') }});"></div>
+            <div id="year"> 1998 </div>
+          </div>
+
+          <script>
+            const slider = document.getElementById("slider")
+            const selector = document.getElementById("selector");
+            const numYears = 2015 - 1981
+            console.log(numYears)
+
+            // total years = 2015 - 1981 = 2015
+            // middle = 50% = (((2015 + 1981) / 2) - 1981) / 34
+            // 1998 is 50%
+
+            slider.oninput = function() {
+              const percentYearsFromStart = (this.value - 1981) / numYears * 100
+
+              // Looks kinda off when you get towards end of slider. This tries to fix that.
+              // More pronounced when higher % width so lets try to keep length of slider smallish
+              if (percentYearsFromStart > 50) {
+                selector.style.left = Math.floor(percentYearsFromStart) + "%"
+              } else {
+                selector.style.left = Math.ceil(percentYearsFromStart) + "%"
+              }
+            }
+          </script>
         </div>
 
-        <div class="row">
-            <div class="column">
-              <h2> Seasonal Rainfall</h2>
-              <img class="graph" src="{{ rainfall }}" id="rainfall">
-            </div>
-            <div class="column">
-                <h2> Average Daily Temperature</h2>
-                <img class="graph" src="{{ temp }}" id="temp">
-            </div>
-            <div class="column">
-                <h2> Optimal Crops to Grow</h2>
-                <img class="graph" src="{{ crop }}" id="crop">
-            </div>
+        <div style="border: 2px solid black; margin: 20px;">
+
+          <h1 id="year-text" style="text-align: center">Year: 1998</h1>
+          <div class="row">
+              <div class="column">
+                <h2> Seasonal Rainfall</h2>
+                <img class="graph" src="{{ rainfall }}" id="rainfall">
+              </div>
+              <div class="column">
+                  <h2> Average Daily Temperature</h2>
+                  <img class="graph" src="{{ temp }}" id="temp">
+              </div>
+              <div class="column">
+                  <h2> Optimal Crops to Grow</h2>
+                  <img class="graph" src="{{ crop }}" id="crop">
+              </div>
+          </div>
+
         </div>
 
         <script src="{{ url_for('static', filename='jquery-3.5.0.min.js') }}"></script>
