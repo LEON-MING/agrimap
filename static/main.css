@@ -114,9 +114,14 @@ hr {
   justify-content: space-around;
 }
 
+.column > h2 {
+  text-align: center;
+  margin-bottom: 0px;
+}
+
 .graph {
   width: 30vw;
-  min-width: 400px;
+  /* min-width: 400px; */
   height: auto;
 }
 
