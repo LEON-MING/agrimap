@@ -58,6 +58,7 @@ hr {
 .video-text > h1 {
   font-size: 72px;
   text-decoration: underline;
+  margin-bottom: 10px;
 }
 
 .video-text > h3 {
